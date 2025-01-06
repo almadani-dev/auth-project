@@ -3,6 +3,7 @@ import authConfig from "./auth.config";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { getUserById } from "@/data/user";
+import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
 
 declare module "next-auth" {
   //To add the Role in the token
@@ -35,8 +36,22 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Prevent sign in without email verification
         if (!existingUser?.emailVerified) return false;
 
-        // TOTO: add 2fa check
+        //  add 2fa check
+        if (existingUser.isTwoFactorEnable) {
+          const twoFactorConfirmation = await getTwoFactorConfirmationByUserId(
+            existingUser.id
+          );
+
+          if (!twoFactorConfirmation) return false;
+
+          // Delete two factor confirmation for next sign in
+
+          await prisma.twoFactorConfirmation.delete({
+            where: { id: twoFactorConfirmation.id },
+          });
+        }
       }
+
       return true;
     },
     async session({ token, session }) {
