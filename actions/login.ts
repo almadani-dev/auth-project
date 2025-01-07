@@ -1,9 +1,7 @@
 "use server";
 
 import z from "zod";
-
 import { LoginSchema } from "@/schemas/index";
-
 import { signIn } from "@/auth";
 import { DEFAULT_LOGIN_REDIRECT } from "@/routes";
 import { AuthError } from "next-auth";
