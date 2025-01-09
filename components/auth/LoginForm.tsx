@@ -45,21 +45,19 @@ export const LoginForm = () => {
     setError("");
     setSuccess("");
     startTransition(() => {
-      login(values)
-        .then((data) => {
-          if (data?.error) {
-            form.reset();
-            setError(data?.error);
-          }
-          if (data?.success) {
-            form.reset();
-            setError(data?.success);
-          }
-          if (data?.twoFactor) {
-            setShowTwoFactor(true);
-          }
-        })
-        .catch(() => setError("Something Went Wrong in login server"));
+      login(values).then((data) => {
+        if (data?.error) {
+          form.reset();
+          setError(data?.error);
+        }
+        if (data?.success) {
+          form.reset();
+          setError(data?.success);
+        }
+        if (data?.twoFactor) {
+          setShowTwoFactor(true);
+        }
+      });
     });
   };
   return (

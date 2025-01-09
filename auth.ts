@@ -4,14 +4,14 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/db";
 import { getUserById } from "@/data/user";
 import { getTwoFactorConfirmationByUserId } from "@/data/two-factor-confirmation";
+import { ExtendedUser } from "./next-auth";
+import { UserRole } from "@prisma/client";
+import { getAccountByUserId } from "./data/account";
 
 declare module "next-auth" {
   //To add the Role in the token
   interface Session {
-    user: {
-      role: string;
-      isTwoFactorEnable: boolean;
-    } & DefaultSession["user"];
+    user: ExtendedUser;
   }
 }
 
@@ -60,11 +60,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.id = token.sub;
       }
 
+      // to add the role and 2fa in the user session
       if (token.role && session.user) {
-        session.user.role = token.role as string;
+        session.user.role = token.role as UserRole;
       }
       if (session.user) {
         session.user.isTwoFactorEnable = token.isTwoFactorEnable as boolean;
+      }
+
+      // to update the name and email if changed
+      if (session.user) {
+        session.user.name = token.name;
+        session.user.email = token.email!;
+        session.user.isOAuth = token.isOAuth as boolean;
       }
       return session;
     },
@@ -73,8 +81,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const existingUser = await getUserById(token.sub);
       if (!existingUser) return token;
 
-      token.role = existingUser.role;
+      // Get the Account of the user if use OAuth
+      const existingAccount = await getAccountByUserId(existingUser.id);
 
+      // To update the name and email and role if have any change
+      token.isOAuth = !!existingAccount;
+      token.name = existingUser.name;
+      token.email = existingUser.email;
+      token.role = existingUser.role;
       token.isTwoFactorEnable = existingUser.isTwoFactorEnable;
 
       return token;

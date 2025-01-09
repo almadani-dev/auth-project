@@ -2,6 +2,7 @@ import { UserInfo } from "@/components/userInfo";
 import { currentUser } from "@/lib/get-user";
 
 const ServerPage = async () => {
+  
   const user = await currentUser();
 
   if (!user) {

@@ -1,12 +1,9 @@
-import { DefaultSession } from "next-auth";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "./ui/badge";
+import { ExtendedUser } from "@/next-auth";
 
 interface userInfoProps {
-  user: {
-    role: string;
-    isTwoFactorEnable: boolean;
-  } & DefaultSession["user"];
+  user: ExtendedUser;
   label: string;
 }
 export const UserInfo = ({ user, label }: userInfoProps) => {
